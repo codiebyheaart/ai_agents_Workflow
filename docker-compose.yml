@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n_business_demo
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      # ── Core ──────────────────────────────────────────────
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - WEBHOOK_URL=http://localhost:5678/
+
+      # ── Auth (optional basic auth) ─────────────────────────
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-false}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-admin123}
+
+      # ── Encryption key for credentials ─────────────────────
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-my-super-secret-key-change-me}
+
+      # ── Timezone ───────────────────────────────────────────
+      - GENERIC_TIMEZONE=Asia/Kolkata
+      - TZ=Asia/Kolkata
+
+      # ── SMTP (Mailtrap or Gmail) ───────────────────────────
+      - N8N_EMAIL_MODE=smtp
+      - N8N_SMTP_HOST=${SMTP_HOST:-sandbox.smtp.mailtrap.io}
+      - N8N_SMTP_PORT=${SMTP_PORT:-2525}
+      - N8N_SMTP_USER=${SMTP_USER:-your_mailtrap_user}
+      - N8N_SMTP_PASS=${SMTP_PASS:-your_mailtrap_pass}
+      - N8N_SMTP_SENDER=${SMTP_SENDER:-noreply@n8n-demo.local}
+
+      # ── OpenAI (optional) ─────────────────────────────────
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+
+      # ── Disable telemetry ─────────────────────────────────
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./workflows:/home/node/workflows:ro   # mount workflow JSONs read-only
+
+    networks:
+      - n8n_net
+
+volumes:
+  n8n_data:
+    driver: local
+
+networks:
+  n8n_net:
+    driver: bridge
